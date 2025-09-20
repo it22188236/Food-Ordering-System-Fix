@@ -1,0 +1,222 @@
+services:
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    volumes:
+      - ./services/user-service:/index
+      - ./shared:/shared
+
+    working_dir: /index
+
+    environment:
+      - NODE_ENV=development
+
+    ports:
+      - "5001:5001"
+
+    env_file:
+      - ./services/user-service/.env
+
+    depends_on:
+      - mongodb
+      - notification-service
+      - rabbitmq
+
+    networks:
+      - food-ordering-service
+
+  restaurant-service:
+    build:
+      context: .
+      dockerfile: services/restaurant-service/Dockerfile
+    volumes:
+      - ./services/restaurant-service:/index
+      - ./shared:/shared
+      - shared-volume:/uploads
+
+    working_dir: /index
+
+    environment:
+      - NODE_ENV=development
+
+    ports:
+      - "5011:5011"
+
+    env_file:
+      - ./services/restaurant-service/.env
+
+    depends_on:
+      - mongodb
+      - user-service
+      - rabbitmq
+
+    networks:
+      - food-ordering-service
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    volumes:
+      - ./services/order-service:/index
+      - ./shared:/shared
+    working_dir: /index
+
+    environment:
+      - NODE_ENV=development
+
+    ports:
+      - "5021:5021"
+
+    env_file:
+      - ./services/order-service/.env
+
+    depends_on:
+      - mongodb
+      - user-service
+      - restaurant-service
+      - notification-service
+      - rabbitmq
+
+    networks:
+      - food-ordering-service
+
+  delivery-service:
+    build:
+      context: .
+      dockerfile: services/delivery-service/Dockerfile
+    volumes:
+      - ./services/delivery-service:/index
+      - ./shared:/shared
+    working_dir: /index
+
+    environment:
+      - NODE_ENV=development
+
+    ports:
+      - "5031:5031"
+
+    env_file:
+      - ./services/delivery-service/.env
+
+    depends_on:
+      - mongodb
+      - order-service
+      - user-service
+      - restaurant-service
+      - rabbitmq
+
+    networks:
+      - food-ordering-service
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    volumes:
+      - ./services/notification-service:/index
+      - ./shared:/shared
+    working_dir: /index
+
+    environment:
+      - NODE_ENV=development
+
+    ports:
+      - "5051:5051"
+
+    env_file:
+      - ./services/notification-service/.env
+
+    depends_on:
+      - mongodb
+      - rabbitmq
+
+    networks:
+      - food-ordering-service
+
+  payment-service:
+    build: ./services/payment-service
+
+    ports:
+      - "5041:5041"
+
+    env_file:
+      - ./services/payment-service/.env
+
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - user-service
+      - restaurant-service
+      - order-service
+
+    networks:
+      - food-ordering-service
+
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED=0 # Temporarily disable SSL verification for testing
+    extra_hosts:
+      - "sandbox.payhere.lk:104.26.11.109" # PayHere sandbox IP
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+    networks:
+      - food-ordering-service
+
+  # frontend-service:
+  #   build: ./frontend-service
+
+  #   ports:
+  #     - "5173:5173"
+
+  #   env_file:
+  #     - ./frontend-service/.env
+
+  #   depends_on:
+  #     - user-service
+
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
+
+  #   stdin_open: true
+
+  #   networks:
+  #     - food-ordering-service
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+
+    networks:
+      - food-ordering-service
+
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  food-ordering-service:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
+  shared-volume:
+    driver: local
