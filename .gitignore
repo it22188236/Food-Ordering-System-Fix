@@ -1,5 +1,6 @@
 ./services/user-service/node_modules
 ./services/user-service/.env
+./services/user-service./dockerignore
 
 ./services/restaurant-service/node_modules
 ./services/restaurant-service/.env
@@ -12,9 +13,16 @@
 
 ./services/payment-service/node_modules
 ./services/payment-service/.env
+./services/payment-service/.dockerignore
 
 ./services/notification-service/node_modules
 ./services/notification-service/.env
 
-./frontend-service/node_modules
-./frontend-service/.env
+./frontend-service/.gitignore
+
+./services/payment-service/.gitignore
+./services/user-service/.gitignore
+./services/restaurant-service/.gitignore
+./services/order-service/.gitignore
+./services/delivery-service/.gitignore
+./services/notification-service/.gitignore
