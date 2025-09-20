@@ -1,0 +1,85 @@
+/* PaymentPage.css */
+
+.payment-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 1rem;
+}
+
+.payment-card {
+  width: 100%;
+  max-width: 28rem;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 2rem;
+  text-align: center;
+}
+
+.payment-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.order-id {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.payment-button {
+  width: 100%;
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.payment-button:hover {
+  background-color: #2563eb;
+}
+
+.payment-button:active {
+  transform: scale(0.98);
+}
+
+.payment-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sandbox-info {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #64748b;
+}
+
+.sandbox-info strong {
+  color: #1e293b;
+}
+
+.sandbox-info p + p {
+  margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .payment-card {
+    padding: 1.5rem;
+  }
+  
+  .payment-title {
+    font-size: 1.25rem;
+  }
+}

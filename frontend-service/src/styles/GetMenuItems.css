@@ -1,0 +1,70 @@
+.menu-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 2rem;
+    justify-content: center;
+  }
+  
+  .menu-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 1rem;
+    width: 280px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+  
+  .menu-card:hover {
+    transform: scale(1.02);
+  }
+  
+  .menu-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .menu-details {
+    padding: 1rem;
+  }
+  
+  .menu-name {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .menu-description {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+  }
+  
+  .menu-category {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+  }
+  
+  .menu-price {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .menu-availability {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .available {
+    color: green;
+  }
+  
+  .not-available {
+    color: red;
+  }
+  

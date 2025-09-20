@@ -1,0 +1,47 @@
+/* DeliveryDashboard.css */
+
+.delivery-dashboard {
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+  }
+  
+  .delivery-dashboard h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+  
+  .delivery-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .delivery-item {
+    background-color: #ffffff;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .delivery-item span {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  
+  .accept-button {
+    background-color: #28a745;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .accept-button:hover {
+    background-color: #218838;
+  }
+  

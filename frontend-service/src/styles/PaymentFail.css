@@ -1,0 +1,39 @@
+.payment-failed {
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff5f5;
+    font-family: Arial, sans-serif;
+  }
+  
+  .payment-failed .card {
+    background: #ffffff;
+    padding: 30px 50px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  
+  .payment-failed h1 {
+    color: #dc3545;
+  }
+  
+  .payment-failed p {
+    margin: 15px 0;
+    font-size: 16px;
+  }
+  
+  .payment-failed button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .payment-failed button:hover {
+    background-color: #c82333;
+  }
+  

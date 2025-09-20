@@ -1,0 +1,151 @@
+/* .footer-ul{
+    padding-left: 6rem;
+    padding-right: 6rem;
+    background-color: #ed7575;
+    color: white;
+}
+
+.footer-li{
+    list-style-type: none;
+    display: flex;
+    gap: 50px;
+}
+
+.footer-li li{
+    font-size: 18px;
+    margin-right: 3rem;
+    list-style-type: none;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.footer-li img{
+    width: 6rem;
+}
+
+.footer-work-li li Link{
+    color: white;
+}
+
+.footer-connect-li{
+    display: flex;
+}
+
+.footer-connect-li li img{
+    width: 2rem;
+}
+
+.footer-connect-li li img:hover{
+   background-color: #9e1212;
+   border-radius: 5px;
+}
+
+.footer-li li li:hover{
+    color: #9e1212;
+    cursor: pointer;
+}
+
+.footer-li li li{
+    font-size: 16px;
+}
+
+.footer-Link{
+    text-decoration: none;
+    color: white;
+}
+
+.footer-Link:hover{
+    color: #9e1212;
+    cursor: pointer;
+} */
+
+
+.footer-container {
+    background-color: #9e1212;
+    color: #f0f0f0;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .footer-ul ul {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .footer-li {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+  
+  .footer-li > li {
+    flex: 1;
+    min-width: 180px;
+  }
+  
+  .footer-li img {
+    height: 50px;
+    margin-bottom: 20px;
+  }
+  
+  .footer-about-ul,
+  .footer-work-ul,
+  .footer-policy-ul,
+  .footer-connect-ul {
+    margin-top: 10px;
+  }
+  
+  .footer-about-li li,
+  .footer-work-li li,
+  .footer-policy-li li {
+    margin-bottom: 10px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .footer-about-li li:hover,
+  .footer-work-li li:hover,
+  .footer-policy-li li:hover {
+    color: #ffffff;
+  }
+  
+  .footer-Link {
+    text-decoration: none;
+    color: #ccc;
+    transition: color 0.3s;
+  }
+  
+  .footer-Link:hover {
+    color: #ffffff;
+  }
+  
+  .footer-connect-li {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  
+  .footer-connect-li li img {
+    height: 28px;
+    width: 28px;
+    transition: transform 0.3s;
+  }
+  
+  .footer-connect-li li img:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Responsive design */
+  @media screen and (max-width: 768px) {
+    .footer-li {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .footer-connect-li {
+      flex-wrap: wrap;
+    }
+  }
+  

@@ -1,0 +1,307 @@
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 5%;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    color: white;
+  }
+  
+  .user-greeting h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  
+  .user-greeting p {
+    margin: 0.5rem 0 0;
+    opacity: 0.9;
+  }
+  
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .avatar-icon {
+    font-size: 1.5rem;
+    color: white;
+  }
+  
+  .dashboard-content {
+    display: flex;
+    flex: 1;
+    padding: 2rem 5%;
+  }
+  
+  .dashboard-sidebar {
+    width: 250px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-right: 2rem;
+  }
+  
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .sidebar-item:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .sidebar-item.active {
+    background-color: #fff2f0;
+    color: #ff4d4f;
+    font-weight: 500;
+  }
+  
+  .sidebar-icon {
+    margin-right: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .notification-badge {
+    position: absolute;
+    right: 1rem;
+    background-color: #ff4d4f;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+  }
+  
+  .dashboard-main {
+    flex: 1;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+  }
+  
+  /* Orders Section */
+  .orders-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+  
+  .no-orders {
+    text-align: center;
+    padding: 3rem 0;
+  }
+  
+  .no-orders p {
+    margin-bottom: 1.5rem;
+    color: #666;
+  }
+  
+  .order-now-btn {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+  
+  .order-now-btn:hover {
+    background-color: #ff7875;
+  }
+  
+  .orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .order-card {
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .order-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  
+  .status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .status-pending { background-color: #fff7e6; color: #fa8c16; }
+  .status-accepted { background-color: #e6f7ff; color: #1890ff; }
+  .status-preparing { background-color: #f6ffed; color: #52c41a; }
+  .status-ready { background-color: #f0f5ff; color: #2f54eb; }
+  .status-ontheway { background-color: #f9f0ff; color: #722ed1; }
+  .status-delivered { background-color: #f6ffed; color: #52c41a; }
+  .status-cancelled { background-color: #fff1f0; color: #ff4d4f; }
+  
+  .order-details {
+    display: flex;
+    margin-bottom: 1.5rem;
+  }
+  
+  .restaurant-info {
+    flex: 1;
+  }
+  
+  .restaurant-info img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .restaurant-info h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  .order-summary {
+    flex: 1;
+    padding-left: 1rem;
+  }
+  
+  .order-summary p {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .track-order-btn, .reorder-btn, .rate-btn {
+    width: 100%;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .track-order-btn {
+    background-color: #ff4d4f;
+    color: white;
+  }
+  
+  .track-order-btn:hover {
+    background-color: #ff7875;
+  }
+  
+  .reorder-btn {
+    background-color: white;
+    color: #ff4d4f;
+    border: 1px solid #ff4d4f;
+    margin-bottom: 0.5rem;
+  }
+  
+  .reorder-btn:hover {
+    background-color: #fff2f0;
+  }
+  
+  .rate-btn {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .rate-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .order-actions {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Loading State */
+  .dashboard-loading {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .loading-spinner {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .loading-spinner::after {
+    content: "";
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #ff4d4f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .dashboard-content {
+      flex-direction: column;
+      padding: 1rem;
+    }
+  
+    .dashboard-sidebar {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 1rem;
+    }
+  
+    .orders-grid {
+      grid-template-columns: 1fr;
+    }
+  }

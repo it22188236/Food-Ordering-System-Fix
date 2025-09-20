@@ -1,0 +1,131 @@
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f9f9;
+  }
+  
+  .menu-item-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .menu-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px 25px;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .menu-logo {
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .menu-profile-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .menu-profile-btn:hover {
+    background: #4338ca;
+  }
+  
+  .menu-content {
+    padding: 30px 20px;
+  }
+  
+  .menu-item-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  .menu-item-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+  
+  .menu-item-details {
+    padding: 20px;
+  }
+  
+  .menu-item-name {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .menu-item-category {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 10px;
+  }
+  
+  .menu-item-description {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #444;
+  }
+  
+  .menu-item-price {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .menu-add-btn {
+    background: #22c55e;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .menu-add-btn:hover {
+    background: #16a34a;
+  }
+
+  .menu-quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .menu-quantity-control button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background-color: #eee;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  
+  .menu-add-button {
+    width: 100%;
+    background-color: #ff5a5f;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .menu-add-button:hover {
+    background-color: #e14c4c;
+  }

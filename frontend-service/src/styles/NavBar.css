@@ -1,0 +1,166 @@
+/* Reset default list styles */
+ul, li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Overall container */
+.nav-bar-container {
+  background-color: #ffffff;
+  box-shadow: 0 1px 6px #9e1212;
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Flex container for nav items */
+.nav-bar-ul {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Left and right aligned items */
+.nav-bar-li {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Logo */
+.nav-bar-li img {
+  height: 40px;
+}
+
+/* Nav item links */
+.nav-bar-component {
+  font-size: 16px;
+  padding: 10px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.nav-bar-components-link {
+  text-decoration: none;
+  color: #333;
+}
+
+.nav-bar-components-link:hover {
+  color:  #9e1212;
+}
+
+/* Login/Register Buttons */
+.nav-bar-li-btn {
+  display: flex;
+  gap: 10px;
+}
+
+
+.nav-bar-li-register-btn {
+  background-color:#9e1212;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-bar-li-login-btn{
+  border: none;
+  color: #9e1212;
+  padding: 8px 14px;
+  border-radius: 5px;
+  border: 0.25px solid #9e1212;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-bar-li-login-btn:hover,
+.nav-bar-li-register-btn:hover {
+  background-color: white;
+  color: #9e1212;
+  border: 0.25px solid #9e1212;
+}
+
+.nav-bar-li-login-btn:hover{
+  background-color: #9e1212;
+  color: white;
+}
+
+/* Profile section */
+.nav-bar-li-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-bar-li-profile-pic-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-bar-li-profile-pic-name img {
+  height: 35px;
+  border-radius: 50%;
+}
+
+.nav-bar-li-profile-name {
+  font-weight: bold;
+}
+
+.nav-bar-li-profile-logout {
+  background-color: #dc3545;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-bar-li-profile-logout:hover {
+  background-color: #b02a37;
+}
+
+/* -------------------------- */
+/* Responsive for small screens */
+@media screen and (max-width: 768px) {
+  .nav-bar-ul {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-bar-li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .nav-bar-li-btn,
+  .nav-bar-li-profile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .nav-bar-component {
+    font-size: 16px;
+    width: 100%;
+  }
+
+  .nav-bar-li-login-btn,
+  .nav-bar-li-register-btn,
+  .nav-bar-li-profile-logout {
+    width: 100%;
+  }
+}
