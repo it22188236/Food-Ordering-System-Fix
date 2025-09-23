@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import "../styles/Login.css";
 import Footer from "../components/Footer";
 import loginImage from "../assets/login-form.jpg";
+import googleIcon from "../../public/images/google.png"
 
 const Login = () => {
   const { login } = useAuth(); // 👈 use AuthContext here
@@ -121,6 +122,17 @@ const Login = () => {
 
               <button type="submit">Login</button>
             </form>
+
+            <a href="http://localhost:5001/api/auth/google">
+              <button>
+                Login with{" "}
+                <img
+                  src={googleIcon}
+                  alt="googleIcon"
+                  style={{ width: "1.2em" }}
+                />
+              </button>
+            </a>
           </div>
         </div>
       </div>
