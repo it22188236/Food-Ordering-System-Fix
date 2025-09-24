@@ -1,20 +1,19 @@
 const { getUserData } = require("../services/userService");
 const Payment = require("../models/paymentModel");
+const crypto = require("crypto");
+const { sendToQueue } = require("../utils/rabbitmq");
+const validator = require("validator");
 
-const merchant_id = process.env.PAYHERE_MERCHANT_ID.trim();
+// Load env vars safely
+const merchant_id = process.env.PAYHERE_MERCHANT_ID?.trim();
 const merchant_secret = process.env.PAYHERE_MERCHANT_SECRET;
 const return_url = process.env.PAYHERE_RETURN_URL;
 const cancel_url = process.env.PAYHERE_CANCEL_URL;
 const notify_url = process.env.PAYHERE_NOTIFY_URL;
-const checkout_url = process.env.PAYHERE_CHECKOUT_URL;
-const sandboxMode = process.env.SANDBOX_MODE;
-const { customAlphabet } = require("nanoid");
 
-const { sendToQueue } = require("../utils/rabbitmq");
-
-const crypto = require("crypto");
-const axios = require("axios");
-const https = require("https");
+if (!merchant_id || !merchant_secret) {
+  console.error("⚠️ PayHere credentials are missing in environment variables!");
+}
 
 const generateCheckoutHash = (orderId, amount) => {
   const amountFormatted = parseFloat(amount).toFixed(2);
@@ -23,18 +22,10 @@ const generateCheckoutHash = (orderId, amount) => {
     orderId,
     amountFormatted,
     "LKR",
-    crypto
-      .createHash("md5")
-      .update(merchant_secret)
-      .digest("hex")
-      .toUpperCase(),
+    crypto.createHash("md5").update(merchant_secret).digest("hex").toUpperCase(),
   ].join("|");
 
-  return crypto
-    .createHash("md5")
-    .update(hashString)
-    .digest("hex")
-    .toUpperCase();
+  return crypto.createHash("md5").update(hashString).digest("hex").toUpperCase();
 };
 
 const verifyPayment = (paymentData) => {
@@ -51,25 +42,6 @@ const verifyPayment = (paymentData) => {
     return { isValid: false, isSuccess: false };
   }
 
-  // const hashedSecret = crypto
-  //   .createHash("md5")
-  //   .update(config.merchantSecret)
-  //   .digest("hex")
-  //   .toUpperCase();
-
-  // const localMd5sig = crypto
-  //   .createHash("md5")
-  //   .update(
-  //     merchant_id +
-  //       order_id +
-  //       payhere_amount +
-  //       payhere_currency +
-  //       status_code +
-  //       hashedSecret
-  //   )
-  //   .digest("hex")
-  //   .toUpperCase();
-
   const localHash = crypto
     .createHash("md5")
     .update(
@@ -79,11 +51,7 @@ const verifyPayment = (paymentData) => {
         payhere_amount,
         payhere_currency,
         status_code,
-        crypto
-          .createHash("md5")
-          .update(merchant_secret)
-          .digest("hex")
-          .toUpperCase(),
+        crypto.createHash("md5").update(merchant_secret).digest("hex").toUpperCase(),
       ].join("|")
     )
     .digest("hex")
@@ -97,8 +65,11 @@ const verifyPayment = (paymentData) => {
 
 const initiatePayment = async (req, res) => {
   try {
-    // await checkPayHereConnectivity();
     const orderId = req.params.orderID;
+
+    if (!validator.isAlphanumeric(orderId)) {
+      return res.status(400).json({ message: "Invalid orderID format" });
+    }
 
     const order = await Payment.findOne({ orderID: orderId });
     if (!order) {
@@ -107,73 +78,46 @@ const initiatePayment = async (req, res) => {
 
     const hash = generateCheckoutHash(orderId.toString(), order.amount);
 
-    console.log("Hash : ", hash);
-
-    // if (order.shorterID.orderID_short === null) {
-    //   const shortOrderID = customAlphabet(orderId, 8);
-    //   console.log(shortOrderID());
-    // }
-
-    // const itemDetails = order.items
-    //   .map((i) => {
-    //     const shortId = Buffer.from(i.menu.toString(), "hex")
-    //       .toString("base64")
-    //       .replace(/[^a-zA-Z0-9]/g, "") // remove symbols like =, /, +
-    //       .slice(0, 8);
-
-    //     return `${shortId} x ${i.quantity}`;
-    //   })
-    //   .join(", ");
-
     const token = req.headers.authorization || req.headers.Authorization;
     const user = await getUserData(req.user.id, token);
 
-    if (!user) {
+    if (!user || !user.data) {
       return res.status(404).json({ message: "No user record found." });
     }
 
     const amountFormatted = parseFloat(order.amount).toFixed(2);
 
+    // Sanitize user data
     const paymentData = {
-      merchant_id: merchant_id,
-      return_url: return_url,
-      cancel_url: cancel_url,
-      notify_url: notify_url,
+      merchant_id,
+      return_url,
+      cancel_url,
+      notify_url,
       order_id: orderId.toString(),
-      items: order.items
-        .map((item) => item.menu)
-        .join(", ")
-        .substring(0, 255),
+      items: order.items.map((item) => String(item.menu)).join(", ").substring(0, 255),
       currency: "LKR",
       amount: amountFormatted,
-      first_name: user.data.first_name.substring(0, 50),
-      last_name: user.data.last_name.substring(0, 50),
-      email: user.data.email.substring(0, 100),
-      phone: user.data.phone.substring(0, 20),
-      address: user.data.address.substring(0, 100),
+      first_name: String(user.data.first_name || "").substring(0, 50),
+      last_name: String(user.data.last_name || "").substring(0, 50),
+      email: validator.isEmail(user.data.email || "") ? user.data.email : "noreply@example.com",
+      phone: String(user.data.phone || "").substring(0, 20),
+      address: String(user.data.address || "").substring(0, 100),
       city: "Colombo",
       country: "Sri Lanka",
-      hash: hash,
+      hash,
       custom_1: orderId,
     };
-
-    // res.json({
-    //   paymentUrl: checkout_url, //sandboxMode
-    //   // ? "https://sandbox.payhere.lk/pay/checkout"
-    //   // : "https://www.payhere.lk/pay/checkout",
-    //   paymentData: paymentData
-    // });
 
     res.json({
       paymentUrl: `https://sandbox.payhere.lk/pay/checkout`,
       paymentData: {
         ...paymentData,
-        // Ensure all values are strings
         amount: paymentData.amount.toString(),
         custom_1: encodeURIComponent(paymentData.custom_1),
       },
     });
 
+    // Messaging queues
     await sendToQueue("delivery_requests", {
       type: "DELIVERY_CREATED",
       data: {
@@ -186,22 +130,14 @@ const initiatePayment = async (req, res) => {
 
     await sendToQueue("restaurant_notifications", {
       type: "ORDER_CONFIRMED",
-      data: {
-        orderID: orderId,
-        status: "confirmed",
-      },
+      data: { orderID: orderId, status: "confirmed" },
     });
 
     await sendToQueue("user_notifications", {
       type: "ORDER_CONFIRMED",
-      data: {
-        orderID: orderId,
-        userID: req.user.id,
-        status: "confirmed",
-      },
+      data: { orderID: orderId, userID: req.user.id, status: "confirmed" },
     });
 
-    console.log("Initiate over");
   } catch (error) {
     console.error("Payment initiation error:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -211,6 +147,11 @@ const initiatePayment = async (req, res) => {
 const notifyPayment = async (req, res) => {
   try {
     const paymentData = req.body;
+
+    if (!paymentData || !paymentData.order_id) {
+      return res.status(400).send("Invalid payment data");
+    }
+
     const { isValid, isSuccess } = verifyPayment(paymentData);
 
     if (!isValid) {
@@ -226,27 +167,18 @@ const notifyPayment = async (req, res) => {
     });
 
     if (!order) {
-      console.error("Order not found for payment:", paymentData.order_id);
       return res.status(404).send("Order not found");
     }
-    // TODO: Update your database with payment status
-    console.log("Payment notification:", {
-      orderId: paymentData.order_id,
-      paymentId: paymentData.payment_id,
-      amount: paymentData.payhere_amount,
-      currency: paymentData.payhere_currency,
-      status: isSuccess ? "success" : "failed",
-      // method: paymentData.method,
-    });
 
+    // Update order/payment status if needed
+    order.status = isSuccess ? "success" : "failed";
     await order.save();
 
-    if (isSuccess) {
-      // TODO: Trigger order fulfillment, send confirmation email, etc.
-      console.log(`Payment successful for order ${order.orderID}`);
-    }
+    console.log("Payment notification processed:", {
+      orderId: paymentData.order_id,
+      status: order.status,
+    });
 
-    // Respond with 200 OK to acknowledge receipt
     res.status(200).send("Notification received");
   } catch (error) {
     console.error("Payment notification error:", error);
@@ -256,7 +188,6 @@ const notifyPayment = async (req, res) => {
 
 const handleCallback = async (req, res) => {
   try {
-    // Verify payment (simplified for sandbox)
     console.log("Payment callback received:", req.body);
     res.status(200).send("Callback received");
   } catch (error) {

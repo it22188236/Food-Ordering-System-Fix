@@ -1,17 +1,17 @@
 const User = require("../models/userModel");
 const validator = require("validator");
+const bcrypt = require("bcryptjs"); // for password hashing
 
+// ✅ Get all users (Only systemAdmin can access)
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    const user = req.user.id;
-
-    if (!users.length === 0) {
-      return res.status(400).json({ message: "❗No record found." });
+    if (req.user.role !== "systemAdmin") {
+      return res.status(403).json({ message: "🚫Access Denied." });
     }
 
-    if(req.user.id !== user.id && req.user.role !== "systemAdmin"){
-      return res.status(403).json({message:"🚫Access Denied."})
+    const users = await User.find().select("-password"); // hide password
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "❗No record found." });
     }
 
     res.status(200).json({ message: "✅Users data found.", data: users });
@@ -25,18 +25,18 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// ✅ Get user by ID (User can access own record, Admin can access all)
 const getUserByID = async (req, res) => {
   try {
     const id = req.params.id;
-
-    const user = await User.findById(id);
+    const user = await User.findById(id).select("-password");
 
     if (!user) {
-      return res.status(400).json({ message: "❗No user found." });
+      return res.status(404).json({ message: "❗No user found." });
     }
 
-    if(req.user.id !== user.id && req.user.role !== "systemAdmin"){
-      return res.status(403).json({message:"🚫Access Denied."})
+    if (req.user.id !== user.id.toString() && req.user.role !== "systemAdmin") {
+      return res.status(403).json({ message: "🚫Access Denied." });
     }
 
     res.status(200).json({ message: "✅User record found.", data: user });
@@ -50,12 +50,17 @@ const getUserByID = async (req, res) => {
   }
 };
 
+// ✅ Add new user (Only systemAdmin can create accounts)
 const addUser = async (req, res) => {
   try {
+    if (req.user.role !== "systemAdmin") {
+      return res.status(403).json({ message: "🚫Access Denied." });
+    }
+
     const { name, email, phone, password, role, address } = req.body;
 
     if (!validator.isEmail(email)) {
-      return res.status(400).json({ message: "❗Email is not in right order." });
+      return res.status(400).json({ message: "❗Invalid email format." });
     }
 
     if (
@@ -66,12 +71,10 @@ const addUser = async (req, res) => {
         minSymbols: 1,
       })
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "❗Password contain 8 or more characters. including uppercase, lowercase, number or special character.",
-        });
+      return res.status(400).json({
+        message:
+          "❗Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.",
+      });
     }
 
     const phoneRegex = /^(\+94|0)(70|71|72|74|75|76|77|78)[0-9]{7}$/;
@@ -79,30 +82,27 @@ const addUser = async (req, res) => {
       return res.status(400).json({ message: "❗Invalid Mobile number" });
     }
 
-    const existUser = await User.findOne({ email: email, phone: phone });
-
+    const existUser = await User.findOne({ $or: [{ email }, { phone }] });
     if (existUser) {
       return res
         .status(400)
-        .json({ message: "🚫User is registered. Please use login." });
+        .json({ message: "🚫User already registered. Please use login." });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       name,
       email,
       phone,
-      password,
+      password: hashedPassword,
       role,
       address,
     });
 
     await newUser.save();
 
-    if (!newUser) {
-      return res.status(400).json({ message: "❌Record created failed." });
-    }
-
-    res.status(201).json({ message: `✅new ${role} created.` });
+    res.status(201).json({ message: `✅New ${role} created.` });
   } catch (err) {
     console.error(err);
     if (!res.headersSent) {
@@ -113,48 +113,48 @@ const addUser = async (req, res) => {
   }
 };
 
+// ✅ Update user (User can update own details, Admin can update anyone)
 const updateUserDetails = async (req, res) => {
   try {
     const id = req.params.id;
-
-    const user = await User.findById(id);
-
-    if (!user) {
-      return res.status(400).json({ message: "❗No user found." });
-    }
-
     const { email, phone, password, address } = req.body;
 
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ message: "❗Email is not in right order." });
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "❗No user found." });
     }
 
-    if (
-      !validator.isStrongPassword(password, {
-        minLength: 8,
-        minNumbers: 1,
-        minUppercase: 1,
-        minSymbols: 1,
-      })
-    ) {
-      return res
-        .status(400)
-        .json({
+    if (req.user.id !== id && req.user.role !== "systemAdmin") {
+      return res.status(403).json({ message: "🚫Access Denied." });
+    }
+
+    if (email && !validator.isEmail(email)) {
+      return res.status(400).json({ message: "❗Invalid email format." });
+    }
+
+    let hashedPassword = user.password;
+    if (password) {
+      if (
+        !validator.isStrongPassword(password, {
+          minLength: 8,
+          minNumbers: 1,
+          minUppercase: 1,
+          minSymbols: 1,
+        })
+      ) {
+        return res.status(400).json({
           message:
-            "❗Password contain 8 or more characters. including uppercase, lowercase, number or special character.",
+            "❗Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.",
         });
+      }
+      hashedPassword = await bcrypt.hash(password, 10);
     }
 
-    const updateUser = await User.findByIdAndUpdate(id, {
-      email: email,
-      phone: phone,
-      password: password,
-      address: address,
-    });
-
-    if (!updateUser) {
-      return res.status(400).json({ message: "❌Update failed." });
-    }
+    const updateUser = await User.findByIdAndUpdate(
+      id,
+      { email, phone, password: hashedPassword, address },
+      { new: true }
+    ).select("-password");
 
     res.status(200).json({ message: "✅Update successful.", data: updateUser });
   } catch (err) {
@@ -167,21 +167,21 @@ const updateUserDetails = async (req, res) => {
   }
 };
 
+// ✅ Delete user (Only Admin can delete)
 const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
-
     const user = await User.findById(id);
 
     if (!user) {
-      return res.status(400).json({ message: "❗No user found." });
+      return res.status(404).json({ message: "❗No user found." });
     }
 
-    const deleteUser = await User.findByIdAndDelete(id);
-
-    if (!deleteUser) {
-      return res.status(400).json({ message: "❌Delete failed." });
+    if (req.user.role !== "systemAdmin") {
+      return res.status(403).json({ message: "🚫Access Denied." });
     }
+
+    await User.findByIdAndDelete(id);
 
     res.status(200).json({ message: "✅User record deleted." });
   } catch (err) {
@@ -194,4 +194,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUserByID, updateUserDetails, deleteUser, addUser };
+module.exports = {
+  getAllUsers,
+  getUserByID,
+  addUser,
+  updateUserDetails,
+  deleteUser,
+};
