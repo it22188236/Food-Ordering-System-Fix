@@ -6,6 +6,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: [true],
     },
+    facebookID: {
+      type: String,
+      unique: [true],
+    },
     name: {
       type: String,
       required: [true, "Name is required."],
@@ -17,25 +21,24 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: [true, "Phone number is required."],
-      unique: [true, "Phone number is already taken."],
+      sparse: true,
     },
-    photo:{
-      type:String
+    photo: {
+      type: String,
     },
     password: {
       type: String,
-      required: [true, "Password is required."],
+      // required: [true, "Password is required."],
     },
     role: {
       type: String,
       enum: ["customer", "restaurantAdmin", "deliveryPerson", "systemAdmin"],
-      required: [true, "User role is required."],
-      default:["customer"]
+      default: "customer",
+      // required: [true, "User role is required."],
     },
     address: {
       type: String,
-      required: [true, "Address is required."],
+      // required: [true, "Address is required."],
     },
   },
   { timestamps: true }

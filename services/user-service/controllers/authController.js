@@ -2,10 +2,11 @@ const User = require("../models/userModel");
 const validator = require("validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const sanitize = require('mongo-sanitize')
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, phone, password, role, address } = req.body;
+    const { name, email, phone, password, role, address } = sanitize(req.body);
 
     if (!validator.isEmail(email)) {
       return res
