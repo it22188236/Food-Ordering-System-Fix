@@ -1,5 +1,6 @@
 const MenuItem = require("../models/menuItemModel");
 const Restaurant = require("../models/restaurantModel");
+<<<<<<< HEAD
 const {
   upload,
   validateAndMove,
@@ -7,6 +8,11 @@ const {
 } = require("../middlewares/uploadMiddleware.js");
 
 const UPLOAD_DIR = path.join(__dirname,"..","uploads");
+=======
+const {upload, validateAndMove, TEMP_DIR} = require("../middlewares/uploadMiddleware.js")
+
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads'); 
+>>>>>>> origin/amashi
 
 const createMenu = async (req, res) => {
   try {
@@ -24,6 +30,7 @@ const createMenu = async (req, res) => {
     //const image = req.file ? req.file.path : null;
     // const image = `/uploads/${req.file.filename}`
     //console.log(req.file);
+    
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded!" });
@@ -54,7 +61,11 @@ const createMenu = async (req, res) => {
       description,
       price,
       category,
+<<<<<<< HEAD
       image: finalName,
+=======
+      image:finalName,
+>>>>>>> origin/amashi
       availability,
     });
 

@@ -3,7 +3,11 @@ const validator = require("validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 <<<<<<< HEAD
+<<<<<<< HEAD
 const sanitize = require('mongo-sanitize')
+=======
+const { limiterSlowBruteByIP, limiterConsecutiveFailsByUsernameAndIP } = require("../middlewares/rateLimit");
+>>>>>>> origin/amashi
 =======
 const { limiterSlowBruteByIP, limiterConsecutiveFailsByUsernameAndIP } = require("../middlewares/rateLimit");
 >>>>>>> origin/amashi
