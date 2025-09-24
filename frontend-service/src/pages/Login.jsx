@@ -1,5 +1,4 @@
-// src/pages/Login.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
@@ -8,7 +7,7 @@ import Footer from "../components/Footer";
 import loginImage from "../assets/login-form.jpg";
 
 const Login = () => {
-  const { login } = useAuth(); // 👈 use AuthContext here
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,6 +19,17 @@ const Login = () => {
   });
 
   const [strengthScore, setStrengthScore] = useState(0);
+  const [csrfToken, setCsrfToken] = useState(""); // State for CSRF token
+
+  // Fetch CSRF token on mount
+  useEffect(() => {
+    fetch("http://localhost:5001/api/csrf-token", {
+      credentials: "include", // important for cookies
+    })
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken))
+      .catch(err => console.error("CSRF fetch error", err));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,24 +64,27 @@ const Login = () => {
     try {
       const res = await fetch("http://localhost:5001/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken, // CSRF token header
+        },
+        credentials: "include", // Send cookies with request
         body: JSON.stringify(form),
       });
       const data = await res.json();
 
       if (!res.ok) {
         toast.error(`${data.message}`);
+        return;
       }
 
-      // data: { token, user }
-      login(data.data.token, data.data.existUser); // 👈 Call login from context
-      navigate(from, { replace: true });
+      login(data.data.token, data.data.existUser);
       toast.success(`${data.message}`);
 
       if (data.data.existUser.role === "customer") {
         navigate("/dashboard");
       } else if (data.data.existUser.role === "restaurantAdmin") {
-        navigate(`/restaurant-dashboard/${data.data.response.restaurantID} `);
+        navigate(`/restaurant-dashboard/${data.data.response.restaurantID}`);
       } else if (data.data.existUser.role === "deliveryPerson") {
         navigate("/delivery-dashboard");
       }
@@ -89,7 +102,6 @@ const Login = () => {
 
         <div className="login-form-right">
           <h1>Order your food Today!!!</h1>
-
           <div className="login-form-container">
             <form className="login-form" onSubmit={handleSubmit}>
               <h2>Login</h2>
@@ -119,7 +131,12 @@ const Login = () => {
                 <span className="strength-label">{getStrengthLabel()}</span>
               </div>
 
-              <button type="submit">Login</button>
+              <button type="submit" disabled={!csrfToken}>
+                Login
+              </button>
+              {!csrfToken && (
+                <div style={{ color: "red" }}>Loading security token...</div>
+              )}
             </form>
           </div>
         </div>

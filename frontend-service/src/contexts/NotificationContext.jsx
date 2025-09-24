@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import DOMPurify from 'dompurify';
 
 const NotificationContext = createContext();
 
@@ -15,8 +16,14 @@ export const NotificationProvider = ({ children }) => {
   const fetchNotifications = async () => {
     try {
       const res = await axios.get('http://localhost:5041/api/notifications');
-      setNotifications(res.data);
-      updateUnreadCount(res.data);
+      // Sanitize data before setting state
+      const sanitized = res.data.map(n => ({
+        ...n,
+        title: DOMPurify.sanitize(n.title),
+        message: DOMPurify.sanitize(n.message)
+      }));
+      setNotifications(sanitized);
+      updateUnreadCount(sanitized);
     } catch (err) {
       console.error(err);
     }
@@ -51,13 +58,20 @@ export const NotificationProvider = ({ children }) => {
       newSocket.emit('joinUserRoom', user._id);
       
       newSocket.on('newNotification', (notification) => {
-        setNotifications(prev => [notification, ...prev]);
+        // Sanitize new notification
+        const safeNotification = {
+          ...notification,
+          title: DOMPurify.sanitize(notification.title),
+          message: DOMPurify.sanitize(notification.message)
+        };
+
+        setNotifications(prev => [safeNotification, ...prev]);
         setUnreadCount(prev => prev + 1);
         
-        // Show toast notification
+        // Show native browser notification
         if (Notification.permission === 'granted') {
-          new Notification(notification.title, {
-            body: notification.message
+          new Notification(safeNotification.title, {
+            body: safeNotification.message
           });
         }
       });
