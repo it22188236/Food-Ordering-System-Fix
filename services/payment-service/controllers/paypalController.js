@@ -42,14 +42,14 @@ export const captureOrder = async (req, res) => {
     if (capture.result.status === 200) {
       const userID = req.user.id;
 
-      const user = await User.findById(userID);
+    //   const user = await getUserData(userID);
       if (!user) {
         return res.status(401).json({ message: "User not logging" });
       }
 
       const updateUser = await User.findByIdAndUpdate(
         userID,
-        { accType: "paid", paymentDate: new Date() },
+        // { accType: "paid", paymentDate: new Date() },
         { new: true }
       );
 

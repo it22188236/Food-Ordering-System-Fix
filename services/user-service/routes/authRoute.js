@@ -1,5 +1,6 @@
 const express = require("express");
 const passport = require("passport");
+const jwt = require('jsonwebtoken')
 
 const {
   registerUser,
@@ -8,6 +9,8 @@ const {
 } = require("../controllers/authController");
 
 const router = express.Router();
+
+const ensureAuthenticated = require("../middlewares/ensureAuthorization.js");
 
 router.get(
   "/google",
@@ -18,11 +21,17 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: "http://localhost:5173/dashboard",
+    // successRedirect: "http://localhost:5173/login-success",
     failureRedirect: "http://localhost:5173/login",
   }),
   (req, res) => {
-    res.redirect("http://localhost:5173/dashboard");
+    const token = jwt.sign(
+      { id: req.user.id, role: req.user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.redirect(`http://localhost:5173/login-success?token=${token}`);
   }
 );
 
@@ -37,7 +46,14 @@ router.get(
     failureRedirect: "/http://localhost:5173/login",
   }),
   (req, res) => {
-    res.redirect("http://localhost:5173/dashboard");
+    // return user as JSON
+    const token = jwt.sign(
+      { id: req.user.id, role: req.user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.redirect(`http://localhost:5173/login-success?token=${token}`);
   }
 );
 
@@ -45,10 +61,14 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/reset-password", resetPassword);
 
-router.get("/me", (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: "Not authenticated" });
-  }
+// router.get("/me", (req, res) => {
+//   if (!req.isAuthenticated()) {
+//     return res.status(401).json({ error: "Not authenticated" });
+//   }
+//   res.json({ user: req.user });
+// });
+
+router.get("/me", ensureAuthenticated, (req, res) => {
   res.json({ user: req.user });
 });
 

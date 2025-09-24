@@ -65,23 +65,25 @@ const Cart = () => {
 
   const handleConfirmOrder = async () => {
     try {
-      const response = await fetch("http://localhost:5021/api/order/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ deliveryAddress }),
-      });
+      // const response = await fetch("http://localhost:5021/api/order/checkout", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify({ deliveryAddress }),
+      // });
 
-      const result = await response.json();
+      // const result = await response.json();
 
-      if (response.ok) {
-        console.log("Order result:", result);
-        navigate(`/pay/${result.data._id}`);
-      } else {
-        toast.error("Checkout failed.");
-      }
+      // if (response.ok) {
+      //   console.log("Order result:", result);
+      //   navigate(`/pay/${result.data._id}`);
+      // } else {
+      //   toast.error("Checkout failed.");
+      // }
+
+      <PayPalButton/>
     } catch (err) {
       toast.error("Something went wrong.");
       console.error(err);
@@ -145,10 +147,13 @@ const Cart = () => {
                   onChange={(e) => setDeliveryAddress(e.target.value)}
                   className="address-input"
                 />
+
+               
                 <button
                   className="confirm-button"
-                  // onClick={handleConfirmOrder}
-                  onClick={<PayPalButton/>}
+                  onClick={handleConfirmOrder}
+                  // onClick={()=><PayPalButton/>}
+                  
                   // disabled={!deliveryAddress.trim()}
                 >
                   Confirm Order

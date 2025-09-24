@@ -49,7 +49,7 @@
 // export default PayPalButton;
 
 import { useEffect, useRef } from "react";
-import { createOrder, captureOrder } from "../api/api";
+import { createOrder, captureOrder } from "../api/api.js";
 
 const PayPalButton = () => {
   const isInitialized = useRef(false); // ✅ flag to avoid double init

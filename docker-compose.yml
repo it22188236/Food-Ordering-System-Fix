@@ -11,8 +11,10 @@ services:
 
     environment:
       - NODE_ENV=development
-      - GOOGLE_CLIENT_ID = 18358866951-mi6qahill5591ij9obqd3j9dm3dg16dm.apps.googleusercontent.com
-      - GOOGLE_CLIENT_SECRET = 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
+      - GOOGLE_CLIENT_ID=18358866951-mi6qahill5591ij9obqd3j9dm3dg16dm.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
+      - FACEBOOK_CLIENT_ID=795711492932945
+      - FACEBOOK_CLIENT_SECRET=ef6ffff19bea9e6a63bfad025bcf4907
 
     ports:
       - "5001:5001"
