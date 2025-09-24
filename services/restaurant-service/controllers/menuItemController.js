@@ -1,5 +1,12 @@
 const MenuItem = require("../models/menuItemModel");
 const Restaurant = require("../models/restaurantModel");
+const {
+  upload,
+  validateAndMove,
+  TEMP_DIR,
+} = require("../middlewares/uploadMiddleware.js");
+
+const UPLOAD_DIR = path.join(__dirname,"..","uploads");
 
 const createMenu = async (req, res) => {
   try {
@@ -15,12 +22,14 @@ const createMenu = async (req, res) => {
 
     //const image = req.file ? `/uploads/${req.file.filename}` : null;
     //const image = req.file ? req.file.path : null;
-    const image = `/uploads/${req.file.filename}`
+    // const image = `/uploads/${req.file.filename}`
     //console.log(req.file);
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded!" });
     }
+
+    const { finalName } = await validateAndMove(req.file.path, UPLOAD_DIR);
 
     const menuItem = await MenuItem.findOne({ name: name });
 
@@ -45,7 +54,7 @@ const createMenu = async (req, res) => {
       description,
       price,
       category,
-      image:image,
+      image: finalName,
       availability,
     });
 
@@ -149,7 +158,6 @@ const updateMenuItem = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded!" });
     }
-
 
     if (
       req.user.id !== restaurant.owner.toString() ||

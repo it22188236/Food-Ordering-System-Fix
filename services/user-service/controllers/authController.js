@@ -2,7 +2,11 @@ const User = require("../models/userModel");
 const validator = require("validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+<<<<<<< HEAD
 const sanitize = require('mongo-sanitize')
+=======
+const { limiterSlowBruteByIP, limiterConsecutiveFailsByUsernameAndIP } = require("../middlewares/rateLimit");
+>>>>>>> origin/amashi
 
 const registerUser = async (req, res) => {
   try {
@@ -84,6 +88,10 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    const ipAddr = req.ip;
+
+    const userKey = `${username}_${ipAddr}`;
+
     if (!email || !password) {
       return res
         .status(400)
@@ -105,6 +113,10 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "❗Password not strong." });
     }
 
+    await limiterSlowBruteByIP.consume(ipAddr);
+
+    await limiterConsecutiveFailsByUsernameAndIP.consume(userKey);
+
     //find user
     const existUser = await User.findOne({ email: email });
     if (!existUser) {
@@ -122,6 +134,8 @@ const loginUser = async (req, res) => {
     if (!comparePassword) {
       return res.status(400).json({ message: "❌Wrong password." });
     }
+
+    await limiterConsecutiveFailsByUsernameAndIP.delete(userKey);
 
     //create jsonwebtoken
     if (existUser && comparePassword) {
@@ -162,13 +176,20 @@ const loginUser = async (req, res) => {
     } else {
       return res.status(400).json({ message: "❌Login failed." });
     }
-  } catch (err) {
-    console.error(err);
-    if (!res.headersSent) {
-      return res
-        .status(500)
-        .json({ message: "❌Internal server error", error: err });
+  } catch (rlRejected) {
+    if (rlRejected instanceof err) {
+      console.error(err);
+      if (!res.headersSent) {
+        return res
+          .status(500)
+          .json({ message: "❌Internal server error", error: err });
+      } else {
+        const retrySecs = Math.round(rlRejected.msBeforeNext / 1000) || 1;
+        res.set('Retry-After', String(retrySecs));
+        return res.status(429).send('Too many login attempts. Try again later.');
+      }
     }
+
   }
 };
 
