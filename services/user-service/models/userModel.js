@@ -5,11 +5,11 @@ const userSchema = new mongoose.Schema(
   {
     googleID: {
       type: String,
-      unique: [true],
+      unique:[true]
     },
     facebookID: {
       type: String,
-      unique: [true],
+      unique:[true]
     },
     name: {
       type: String,

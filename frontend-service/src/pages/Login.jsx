@@ -10,7 +10,8 @@ import googleIcon from "../../public/images/google.png";
 import facebookIcon from "../../public/images/facebook.png";
 
 const Login = () => {
- const { loginWithEmail, loginWithGoogle, loginWithFacebook, logout, auth } = useAuth(); // 👈 use AuthContext here
+  const { loginWithEmail, loginWithGoogle, loginWithFacebook, logout, auth } =
+    useAuth(); // 👈 use AuthContext here
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -123,6 +124,30 @@ const Login = () => {
 
               <button type="submit">Login</button>
 
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textAlign: "center",
+                }}
+              >
+                <hr
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderTop: "1px solid #5c1b1bff",
+                  }}
+                />
+                <span style={{ padding: "0 10px", color: "#201e1eff" }}>OR</span>
+                <hr
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderTop: "1px solid #5c1b1bff",
+                  }}
+                />
+              </div>
+
               {/* <a href="http://localhost:5001/api/auth/google"> */}
               <button
                 style={{ marginTop: "1rem" }}
@@ -133,29 +158,29 @@ const Login = () => {
 
                 onClick={loginWithGoogle}
               >
-                
                 <img
                   src={googleIcon}
                   alt="googleIcon"
-                  style={{ width: "1.2em",marginRight:"1em" }}
-                /> Continue with google
+                  style={{ width: "1.2em", marginRight: "1em" }}
+                />{" "}
+                Continue with google
               </button>
               {/* </a> */}
 
               <button
-                style={{ marginTop: "1rem"}}
+                style={{ marginTop: "1rem" }}
                 // onClick={() => {
                 //   window.location.href =
                 //     "http://localhost:5001/api/auth/facebook";
                 // }}
                 onClick={loginWithFacebook}
               >
-                
                 <img
                   src={facebookIcon}
                   alt="facebookIcon"
-                  style={{ width: "1.2em", marginRight:"1em" }}
-                /> Continue with Facebook
+                  style={{ width: "1.2em", marginRight: "1em" }}
+                />{" "}
+                Continue with Facebook
               </button>
             </form>
           </div>

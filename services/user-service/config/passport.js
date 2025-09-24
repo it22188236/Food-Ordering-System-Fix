@@ -51,7 +51,7 @@ passport.use(
 
         if (!user) {
           user = await User.create({
-            googleID: profile.id,
+            facebookID: profile.id,
             name: profile.displayName,
             email: profile.emails[0].value,
             photo: profile.photos[0].value,

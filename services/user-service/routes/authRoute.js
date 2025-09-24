@@ -61,12 +61,6 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/reset-password", resetPassword);
 
-// router.get("/me", (req, res) => {
-//   if (!req.isAuthenticated()) {
-//     return res.status(401).json({ error: "Not authenticated" });
-//   }
-//   res.json({ user: req.user });
-// });
 
 router.get("/me", ensureAuthenticated, (req, res) => {
   res.json({ user: req.user });
