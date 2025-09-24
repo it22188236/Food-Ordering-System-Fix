@@ -37,7 +37,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         // Fetch user data
-        const userResponse = await axios.get('/api/users/me');
+        const userResponse = await axios.get('http://localhost:5001/api/auth/me');
         setUserData(userResponse.data);
         
         // Fetch orders

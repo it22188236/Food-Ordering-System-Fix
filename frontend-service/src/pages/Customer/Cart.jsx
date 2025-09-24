@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "../../styles/Cart.css";
 import { useNavigate } from "react-router-dom";
+import PayPalButton from "../../components/PaypalButton";
 
 const Cart = () => {
   const [carts, setCarts] = useState([]);
@@ -9,6 +10,7 @@ const Cart = () => {
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -145,7 +147,8 @@ const Cart = () => {
                 />
                 <button
                   className="confirm-button"
-                  onClick={handleConfirmOrder}
+                  // onClick={handleConfirmOrder}
+                  onClick={<PayPalButton/>}
                   // disabled={!deliveryAddress.trim()}
                 >
                   Confirm Order

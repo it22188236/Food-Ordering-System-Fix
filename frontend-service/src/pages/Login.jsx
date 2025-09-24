@@ -6,10 +6,11 @@ import { toast } from "react-toastify";
 import "../styles/Login.css";
 import Footer from "../components/Footer";
 import loginImage from "../assets/login-form.jpg";
-import googleIcon from "../../public/images/google.png"
+import googleIcon from "../../public/images/google.png";
+import facebookIcon from "../../public/images/facebook.png";
 
 const Login = () => {
-  const { login } = useAuth(); // 👈 use AuthContext here
+ const { loginWithEmail, loginWithGoogle, loginWithFacebook, logout, auth } = useAuth(); // 👈 use AuthContext here
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -65,7 +66,7 @@ const Login = () => {
       }
 
       // data: { token, user }
-      login(data.data.token, data.data.existUser); // 👈 Call login from context
+      loginWithEmail(data.data.token, data.data.existUser); // 👈 Call login from context
       navigate(from, { replace: true });
       toast.success(`${data.message}`);
 
@@ -121,10 +122,17 @@ const Login = () => {
               </div>
 
               <button type="submit">Login</button>
-            </form>
 
-            <a href="http://localhost:5001/api/auth/google">
-              <button>
+              {/* <a href="http://localhost:5001/api/auth/google"> */}
+              <button
+                style={{ marginTop: "1rem" }}
+                // onClick={() =>
+                //   (window.location.href =
+                //     "http://localhost:5001/api/auth/google")
+                // }
+
+                onClick={loginWithGoogle}
+              >
                 Login with{" "}
                 <img
                   src={googleIcon}
@@ -132,7 +140,24 @@ const Login = () => {
                   style={{ width: "1.2em" }}
                 />
               </button>
-            </a>
+              {/* </a> */}
+
+              <button
+                style={{ marginTop: "1rem" }}
+                // onClick={() => {
+                //   window.location.href =
+                //     "http://localhost:5001/api/auth/facebook";
+                // }}
+                onClick={loginWithFacebook}
+              >
+                Login with{" "}
+                <img
+                  src={facebookIcon}
+                  alt="facebookIcon"
+                  style={{ width: "1.2em" }}
+                />
+              </button>
+            </form>
           </div>
         </div>
       </div>
