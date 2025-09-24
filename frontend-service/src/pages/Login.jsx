@@ -133,29 +133,29 @@ const Login = () => {
 
                 onClick={loginWithGoogle}
               >
-                Login with{" "}
+                
                 <img
                   src={googleIcon}
                   alt="googleIcon"
-                  style={{ width: "1.2em" }}
-                />
+                  style={{ width: "1.2em",marginRight:"1em" }}
+                /> Continue with google
               </button>
               {/* </a> */}
 
               <button
-                style={{ marginTop: "1rem" }}
+                style={{ marginTop: "1rem"}}
                 // onClick={() => {
                 //   window.location.href =
                 //     "http://localhost:5001/api/auth/facebook";
                 // }}
                 onClick={loginWithFacebook}
               >
-                Login with{" "}
+                
                 <img
                   src={facebookIcon}
                   alt="facebookIcon"
-                  style={{ width: "1.2em" }}
-                />
+                  style={{ width: "1.2em", marginRight:"1em" }}
+                /> Continue with Facebook
               </button>
             </form>
           </div>

@@ -68,7 +68,7 @@ const NavBar = () => {
                       </li>
                       <li className="nav-bar-li-profile-name">
                         {" "}
-                        Hello! {auth.user.first_name}
+                        Hello! {auth.user.name}
                       </li>
                     </div>
 

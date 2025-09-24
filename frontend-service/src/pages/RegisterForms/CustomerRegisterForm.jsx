@@ -5,8 +5,6 @@ import { toast } from "react-toastify";
 import customer from "../../assets/customer-register.jpg";
 import Footer from "../../components/Footer";
 import { useNavigate } from "react-router-dom";
-import googleIcon from "../../../public/images/google.png";
-import facebookIcon from "../../../public/images/facebook.png";
 
 const CustomerRegisterForm = () => {
   const navigate = useNavigate();
@@ -169,35 +167,9 @@ const CustomerRegisterForm = () => {
 
               <button type="submit">Register</button>
 
-              <button
-                style={{ marginTop: "1em" }}
-                onClick={() =>
-                  (window.location.href =
-                    "http://localhost:5001/api/auth/google")
-                }
-              >
-                Continue with{" "}
-                <img
-                  src={googleIcon}
-                  alt="googleIcon"
-                  style={{ width: "1.2em" }}
-                />
-              </button>
+              
 
-              <button
-                style={{ marginTop: "1rem" }}
-                onClick={() => {
-                  window.location.href =
-                    "http://localhost:5001/api/auth/facebook";
-                }}
-              >
-                Continue with{" "}
-                <img
-                  src={facebookIcon}
-                  alt="facebookIcon"
-                  style={{ width: "1.2em" }}
-                />
-              </button>
+              
             </form>
           </div>
         </div>
