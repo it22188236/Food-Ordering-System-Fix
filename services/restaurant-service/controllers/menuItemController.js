@@ -1,18 +1,8 @@
 const MenuItem = require("../models/menuItemModel");
 const Restaurant = require("../models/restaurantModel");
-<<<<<<< HEAD
-const {
-  upload,
-  validateAndMove,
-  TEMP_DIR,
-} = require("../middlewares/uploadMiddleware.js");
 
 const UPLOAD_DIR = path.join(__dirname,"..","uploads");
-=======
 const {upload, validateAndMove, TEMP_DIR} = require("../middlewares/uploadMiddleware.js")
-
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads'); 
->>>>>>> origin/amashi
 
 const createMenu = async (req, res) => {
   try {
@@ -61,11 +51,7 @@ const createMenu = async (req, res) => {
       description,
       price,
       category,
-<<<<<<< HEAD
       image: finalName,
-=======
-      image:finalName,
->>>>>>> origin/amashi
       availability,
     });
 
