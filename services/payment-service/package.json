@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "amqplib": "^0.10.7",
     "axios": "^1.9.0",
     "body-parser": "^2.2.0",

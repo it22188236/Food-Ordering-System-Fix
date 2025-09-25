@@ -1,15 +1,15 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
   deliveryPersonAssign,
-  getAllDeliveries
+  getAllDeliveries,
 } = require("../controllers/deliveryController");
 
-const validateToken = require('../middlewares/validationToken')
+const validateToken = require("../middlewares/validationToken");
 
-router.put('/:orderID/assign',validateToken,deliveryPersonAssign);
-router.get('/deliveries',validateToken,getAllDeliveries);
+// Protected routes
+router.put("/:orderID/assign", validateToken, deliveryPersonAssign);
+router.get("/deliveries", validateToken, getAllDeliveries);
 
 module.exports = router;

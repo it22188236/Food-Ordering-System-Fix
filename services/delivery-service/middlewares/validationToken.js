@@ -2,33 +2,49 @@ const jwt = require("jsonwebtoken");
 
 const validateToken = async (req, res, next) => {
   try {
-    const token = req.headers["authorization"]?.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ message: "Access token required" });
+    const authHeader = req.headers["authorization"];
+    if (!authHeader) {
+      return res.status(401).json({ message: "❌ Access token required" });
     }
 
-    if(!process.env.JWT_SECRET){
-      return res.status(404).json({message:"JWT secret not found in environment variables."})
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "❌ Token not provided" });
     }
+
+    if (!process.env.JWT_SECRET) {
+      return res
+        .status(500)
+        .json({ message: "❌ JWT secret not configured in environment" });
+    }
+
     const verifyUser = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(verifyUser);
 
     if (!verifyUser) {
-      return res
-        .status(403)
-        .json({ message: "Your session time is out. Please re-login." });
+      return res.status(403).json({
+        message: "❌ Invalid or expired token. Please log in again.",
+      });
     }
-    
-    req.user = verifyUser;
-    next();
 
-    
+    req.user = verifyUser; // Attach decoded user info
+    next();
   } catch (err) {
-    console.error(err);
+    console.error("JWT Validation Error:", err.message);
+
+    if (err.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .json({ message: "❌ Token expired. Please log in again." });
+    } else if (err.name === "JsonWebTokenError") {
+      return res
+        .status(401)
+        .json({ message: "❌ Invalid token. Please log in again." });
+    }
+
     if (!res.headersSent) {
       return res
         .status(500)
-        .json({ message: "Internal server error", error: err });
+        .json({ message: "❌ Internal server error", error: err.message });
     }
   }
 };

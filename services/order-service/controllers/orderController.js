@@ -1,3 +1,6 @@
+// services/order-service/controllers/orderController.js
+
+const mongoose = require("mongoose");
 const Order = require("../models/orderModel");
 const Cart = require("../models/cartModel");
 // const sendOrderMessages = require("../utils/msgProducer");
@@ -5,9 +8,16 @@ const { getUserData } = require("../services/userService");
 const { getMenuItemData } = require("../services/restaurantService");
 const { sendToQueue } = require("../utils/rabbitmq");
 const EventType = require("@shared/events/eventTypes");
-const axios = require("axios");
 const { sendOrderNotification } = require("../services/notificationService");
 
+/**
+ * Helper: validate ObjectId
+ */
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+/**
+ * Create new order from cart
+ */
 const checkoutCart = async (req, res) => {
   try {
     const userID = req.user.id;
@@ -17,27 +27,17 @@ const checkoutCart = async (req, res) => {
 
     const user = await getUserData(req.user.id, token);
 
-    // const user = await axios(
-    //   `${process.env.USER_SERVICE_URL}/api/users/get-user/${userID}`,
-    //   {
-    //     method: "GET",
-    //     headers: {
-    //       Authorization: `${token}`,
-    //     },
-    //   }
-    // );
-
     if (!user) {
       return res.status(404).json({ message: "User record not found." });
     }
-    console.log("user records ", user);
 
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: "❗Your cart is empty." });
+      return res.status(400).json({ message: "Your cart is empty." });
     }
 
+    // ensure requester is either the user or matches the cart customer
     if (req.user.id !== user.id && req.user.id !== cart.customer.toString()) {
-      return res.status(403).json({ message: "🚫Access denied." });
+      return res.status(403).json({ message: "Access denied." });
     }
 
     const { deliveryAddress } = req.body;
@@ -45,31 +45,25 @@ const checkoutCart = async (req, res) => {
     if (!deliveryAddress) {
       return res
         .status(400)
-        .json({ message: "❗Please added delivery address." });
+        .json({ message: "Please added delivery address." });
     }
+
     let total = 0;
     const orderItems = [];
 
     for (const item of cart.items) {
-      // console.log(item.menu)
-      // total += item.menu * item.quantity;
-      // orderItems.push({
-      //   menu: item.menu.id,
-      //   quantity: item.quantity,
-      // });
-      const menuData = await getMenuItemData(cart.restaurant, item.menu); // item.menu = menu ID
+      const menuData = await getMenuItemData(cart.restaurant, item.menu);
       if (!menuData) {
         return res
           .status(404)
-          .json({ message: `❌Menu item not found: ${item.menu}` });
+          .json({ message: `Menu item not found: ${item.menu}` });
       }
 
-      // console.log("menu name:", item.name);
-
+      // compute total
       total += item.quantity * menuData.data.price;
 
       orderItems.push({
-        menu: item.menu, // just the ID, unless you want to store full menu info
+        menu: item.menu, // menu ID
         menuName: item.menuName,
         quantity: item.quantity,
       });
@@ -79,6 +73,7 @@ const checkoutCart = async (req, res) => {
       }
     }
 
+    // check if similar pending order exists
     const existOrderDetails = await Order.findOne({
       customer: userID,
       restaurant: cart.restaurant,
@@ -96,6 +91,7 @@ const checkoutCart = async (req, res) => {
         deliveryAddress: deliveryAddress,
       });
 
+      // push events to queues (non-blocking)
       await sendToQueue("restaurant_notifications", {
         type: "ORDER_CREATED",
         data: {
@@ -125,57 +121,94 @@ const checkoutCart = async (req, res) => {
         },
       });
 
-       await sendToQueue("delivery_requests", {
-            type: "DELIVERY_CREATED",
-            data: {
-              orderID: newOrder._id,
-              userID: newOrder.customer,
-              restaurantID: newOrder.restaurant,
-              deliveryAddress:newOrder.deliveryAddress,
-              status: "pending",
-            },
-          });
+      await sendToQueue("delivery_requests", {
+        type: "DELIVERY_CREATED",
+        data: {
+          orderID: newOrder._id,
+          userID: newOrder.customer,
+          restaurantID: newOrder.restaurant,
+          deliveryAddress: newOrder.deliveryAddress,
+          status: "pending",
+        },
+      });
 
-      if (!newOrder) {
-        return res.status(400).json({ message: "New order unsaved." });
-      }
+      // save order
       await newOrder.save();
 
+      // remove cart only if order got confirmed (if your logic requires)
       if (newOrder.status === "confirmed") {
         await Cart.findByIdAndDelete(cart._id);
       }
 
-      sendOrderNotification(newOrder, "order_placed");
-      res.status(201).json({
-        message: "✅Order placed successfully.",
+      // send notifications
+      try {
+        sendOrderNotification(newOrder, "order_placed");
+      } catch (notifyErr) {
+        console.error("Notification error:", notifyErr);
+      }
+
+      return res.status(201).json({
+        message: "Order placed successfully.",
         data: newOrder,
       });
     }
 
-    //await sendOrderMessages(newOrder, cart.restaurant, userID);
-
-    // if (newOrder.paymentStatus === "paid") {
-
-    // }
+    // If similar pending order exists, respond accordingly
+    return res
+      .status(200)
+      .json({ message: "An existing pending order found.", data: existOrderDetails });
   } catch (error) {
-    console.error("❌Checkout failed:", error);
-    // res
-    //   .status(500)
-    //   .json({ message: "❌Internal Server Error", error: err.message });
+    console.error("Checkout failed:", error);
+    if (!res.headersSent) {
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
+    }
   }
 };
 
-const updateOrderStatus = async (orderID, status) => {
+/**
+ * Update order status (called by restaurant service or admin)
+ * Router: PATCH /update-order-status/:orderID
+ */
+const updateOrderStatus = async (req, res) => {
   try {
-    // const orderID = req.params.orderID;
+    const { orderID } = req.params;
+    const { status } = req.body;
 
-    // const { status } = req.body;
+    if (!isValidObjectId(orderID)) {
+      return res.status(400).json({ message: "Invalid order ID" });
+    }
 
-    const order = await Order.findByIdAndUpdate(
-      orderID,
-      { status },
-      { new: true }
-    );
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+
+    const order = await Order.findById(orderID);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Authorization: only restaurant (or admin) can update status
+    // Adjust this logic if you have a dedicated restaurant-role and linking field
+    if (req.user.role !== "admin" && req.user.role !== "restaurant") {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to update order status" });
+    }
+
+    // If user is restaurant role, ensure they belong to the same restaurant (if such field exists)
+    if (req.user.role === "restaurant") {
+      // If req.user stores restaurant id in e.g., req.user.restaurantId, check it:
+      if (req.user.restaurantId && order.restaurant.toString() !== req.user.restaurantId.toString()) {
+        return res
+          .status(403)
+          .json({ message: "You are not authorized for this restaurant's orders" });
+      }
+    }
+
+    order.status = status;
+    await order.save();
 
     let notificationType;
     switch (status) {
@@ -193,11 +226,19 @@ const updateOrderStatus = async (orderID, status) => {
         break;
       case "cancel":
         notificationType = "order_cancel";
+        break;
+      default:
+        notificationType = null;
     }
 
     if (notificationType) {
-      await sendOrderNotification(order, notificationType);
+      try {
+        await sendOrderNotification(order, notificationType);
+      } catch (err) {
+        console.error("Notification send failed:", err);
+      }
     }
+
     await sendToQueue("user_notifications", {
       type: EventType.ORDER_STATUS_UPDATE,
       data: {
@@ -220,128 +261,211 @@ const updateOrderStatus = async (orderID, status) => {
         },
       });
     }
-    // res.status(200).json({ message: "✅Order status updated.", data: order });
-    console.log("Order updated success.");
+
+    return res.status(200).json({ message: "Order status updated.", data: order });
   } catch (error) {
-    console.error(error);
+    console.error("updateOrderStatus error:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
   }
 };
 
+/**
+ * Get orders of the authenticated user
+ * Router: GET /all-orders
+ */
 const getOrders = async (req, res) => {
   try {
     const userID = req.user.id;
-    const orders = await Order.find({ customer: userID });
 
+    const orders = await Order.find({ customer: userID }).lean();
+
+    // (Optional) double-check user service data if needed
     const token = req.headers.authorization;
-
-    const user = await getUserData(userID, token);
-    console.log(user);
-
-    if (req.user.id !== user.data._id) {
-      return res.status(403).json({ message: "🚫Access denied." });
+    let user;
+    try {
+      user = await getUserData(userID, token);
+    } catch (err) {
+      console.warn("Warning: getUserData failed", err);
     }
 
-    if (!orders) {
-      return res.status(404).json({ message: "❌No order found." });
+    // If you expect getUserData to return user.data._id, ensure check; otherwise skip
+    if (user && user.data && req.user.id !== user.data._id) {
+      return res.status(403).json({ message: "Access denied." });
     }
 
-    res.status(200).json({ message: "✅Order data found.", data: orders });
-  } catch (error) {
-    console.error(err);
-    if (!res.headersSent) {
-      return res
-        .status(500)
-        .json({ message: "❌Internal server error", error: err });
-    }
-  }
-};
-
-const getRestaurantOrder = async (req, res) => {
-  try {
-    const restaurantID = req.params.restaurantID;
-
-    console.log("restaurant ID", restaurantID);
-
-    const order = await Order.find({ restaurant: restaurantID });
-
-    if (!order) {
-      res.status(404).json({ message: "No orders found." });
-    }
-
-    res.status(200).json({ message: "Restaurant orders found.", data: order });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const getOrdersByID = async (orderID) => {
-  try {
-    const order = await Order.findById(orderID);
-
-    if (!order) {
-      return res.status(404).json({ message: "❗No order record found." });
-    }
-
-    res.status(200).json({ message: "✅Order Data found.", data: order });
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const getOrderByID = async (req, res) => {
-  try {
-    const { orderID } = req.params.orderID;
-
-    if (!orderID) {
+    if (!orders || orders.length === 0) {
       return res.status(404).json({ message: "No order found." });
     }
 
-    const order = await Order.findById(orderID);
+    return res.status(200).json({ message: "Order data found.", data: orders });
+  } catch (error) {
+    console.error("getOrders error:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  }
+};
 
+/**
+ * Get orders for a restaurant (protected)
+ * Router: GET /get-restaurant-order/:restaurantID
+ * NOTE: Authorization here is application specific. We allow admins and restaurant-role users who match restaurantId.
+ */
+const getRestaurantOrder = async (req, res) => {
+  try {
+    const { restaurantID } = req.params;
+
+    if (!isValidObjectId(restaurantID)) {
+      return res.status(400).json({ message: "Invalid restaurant ID" });
+    }
+
+    // Authorization: only admin or restaurant owner can fetch
+    if (req.user.role !== "admin" && req.user.role !== "restaurant") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    if (req.user.role === "restaurant") {
+      // If restaurant users have a restaurantId field, ensure match
+      if (req.user.restaurantId && req.user.restaurantId.toString() !== restaurantID.toString()) {
+        return res.status(403).json({ message: "Unauthorized for this restaurant" });
+      }
+    }
+
+    const orders = await Order.find({ restaurant: restaurantID }).lean();
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: "No orders found." });
+    }
+
+    return res.status(200).json({ message: "Restaurant orders found.", data: orders });
+  } catch (error) {
+    console.error("getRestaurantOrder error:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+};
+
+/**
+ * Get a single order by ID (ownership enforced)
+ * Router: GET /:orderID
+ */
+const getOrdersByID = async (req, res) => {
+  try {
+    const { orderID } = req.params;
+
+    if (!isValidObjectId(orderID)) {
+      return res.status(400).json({ message: "Invalid order ID" });
+    }
+
+    const order = await Order.findById(orderID).lean();
     if (!order) {
       return res.status(404).json({ message: "No order record found." });
     }
 
-    res.status(200).json({ message: "Order data found.", data: order });
+    // Ownership check: owner or admin or restaurant (if applicable)
+    if (order.customer.toString() !== req.user.id && req.user.role !== "admin" && req.user.role !== "restaurant") {
+      return res.status(403).json({ message: "You are not authorized to view this order" });
+    }
+
+    // If restaurant role, ensure same restaurant
+    if (req.user.role === "restaurant" && req.user.restaurantId && order.restaurant.toString() !== req.user.restaurantId.toString()) {
+      return res.status(403).json({ message: "You are not authorized for this restaurant order" });
+    }
+
+    return res.status(200).json({ message: "Order Data found.", data: order });
   } catch (error) {
-    console.error(error);
+    console.error("getOrdersByID error:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
   }
 };
 
-const deleteOrder = async (req, res) => {
+/**
+ * Alternative single order fetch (router had /get-order/:orderID)
+ * Router: GET /get-order/:orderID
+ */
+const getOrderByID = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.orderID);
+    const { orderID } = req.params;
 
-    if (!order) {
-      return res.status(404).json({ message: "❗No record found." });
+    if (!isValidObjectId(orderID)) {
+      return res.status(400).json({ message: "Invalid order ID" });
     }
 
-    const deleteOrder = await Order.findByIdAndDelete(req.params.id);
+    const order = await Order.findById(orderID).lean();
+    if (!order) {
+      return res.status(404).json({ message: "No order record found." });
+    }
 
+    // Ownership check same as above
+    if (order.customer.toString() !== req.user.id && req.user.role !== "admin" && req.user.role !== "restaurant") {
+      return res.status(403).json({ message: "You are not authorized to view this order" });
+    }
+
+    if (req.user.role === "restaurant" && req.user.restaurantId && order.restaurant.toString() !== req.user.restaurantId.toString()) {
+      return res.status(403).json({ message: "You are not authorized for this restaurant order" });
+    }
+
+    return res.status(200).json({ message: "Order data found.", data: order });
+  } catch (error) {
+    console.error("getOrderByID error:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+};
+
+/**
+ * Delete an order (ownership enforced)
+ * Router: DELETE /:orderID
+ */
+const deleteOrder = async (req, res) => {
+  try {
+    const { orderID } = req.params;
+
+    if (!isValidObjectId(orderID)) {
+      return res.status(400).json({ message: "Invalid order ID" });
+    }
+
+    const order = await Order.findById(orderID);
+    if (!order) {
+      return res.status(404).json({ message: "No record found." });
+    }
+
+    // Only owner or admin can delete
+    if (order.customer.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Unauthorized to delete this order" });
+    }
+
+    const deleted = await Order.findByIdAndDelete(orderID);
+
+    // push cancel notifications
     await sendToQueue("restaurant_notifications", {
       type: EventType.ORDER_CANCELLED,
+      data: { orderId: orderID },
     });
 
     await sendToQueue("user_notifications", {
       type: EventType.ORDER_CANCELLED,
+      data: { orderId: orderID },
     });
 
-    if (!deleteOrder) {
-      return res.status(400).json({ message: "❌Order delete failed." });
+    if (!deleted) {
+      return res.status(400).json({ message: "Order delete failed." });
     }
 
-    res.status(200).json({ message: "✅Order deleted." });
+    return res.status(200).json({ message: "Order deleted." });
   } catch (error) {
-    console.error(err);
+    console.error("deleteOrder error:", error);
     if (!res.headersSent) {
-      return res
-        .status(500)
-        .json({ message: "❌Internal server error", error: err });
+      return res.status(500).json({ message: "Internal server error", error: error.message });
     }
   }
 };
-
-
 
 module.exports = {
   checkoutCart,

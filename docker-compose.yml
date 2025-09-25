@@ -11,6 +11,7 @@ services:
 
     environment:
       - NODE_ENV=development
+      
 
     ports:
       - "5001:5001"
@@ -19,7 +20,7 @@ services:
       - ./services/user-service/.env
 
     depends_on:
-      - mongodb
+      # - mongodb
       - notification-service
       - rabbitmq
 
@@ -47,7 +48,7 @@ services:
       - ./services/restaurant-service/.env
 
     depends_on:
-      - mongodb
+      # - mongodb
       - user-service
       - rabbitmq
 
@@ -73,7 +74,7 @@ services:
       - ./services/order-service/.env
 
     depends_on:
-      - mongodb
+      # - mongodb
       - user-service
       - restaurant-service
       - notification-service
@@ -101,7 +102,7 @@ services:
       - ./services/delivery-service/.env
 
     depends_on:
-      - mongodb
+      # - mongodb
       - order-service
       - user-service
       - restaurant-service
@@ -129,7 +130,7 @@ services:
       - ./services/notification-service/.env
 
     depends_on:
-      - mongodb
+      # - mongodb
       - rabbitmq
 
     networks:
@@ -145,7 +146,7 @@ services:
       - ./services/payment-service/.env
 
     depends_on:
-      - mongodb
+      # - mongodb
       - rabbitmq
       - user-service
       - restaurant-service
@@ -198,18 +199,18 @@ services:
   #   networks:
   #     - food-ordering-service
 
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    restart: always
-    ports:
-      - "27017:27017"
+  # mongodb:
+  #   image: mongo:latest
+  #   container_name: mongodb
+  #   restart: always
+  #   ports:
+  #     - "27017:27017"
 
-    networks:
-      - food-ordering-service
+  #   networks:
+  #     - food-ordering-service
 
-    volumes:
-      - mongo-data:/data/db
+  #   volumes:
+  #     - mongo-data:/data/db
 
 networks:
   food-ordering-service:

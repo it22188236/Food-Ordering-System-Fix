@@ -26,6 +26,7 @@ import PaymentFail from "./pages/Customer/PaymentFail";
 import AllMenuRestaurant from "./pages/Customer/AllMenuRestaurant";
 import AllOrders from "./pages/Customer/AllOrders";
 import PaymentPage from "./pages/Customer/PaymentPage";
+import LoginSuccess from "./pages/LoginSuccess";
 
 function App() {
   return (
@@ -93,6 +94,8 @@ function App() {
           <Route path="/unauthorized" element={<div>Access Denied</div>} />
 
           <Route path="*" element={<Login />} />
+
+          <Route path="/login-success" element={<LoginSuccess/>}/>
         </Routes>
       </Router>
     </>

@@ -6,9 +6,12 @@ import { toast } from "react-toastify";
 import "../styles/Login.css";
 import Footer from "../components/Footer";
 import loginImage from "../assets/login-form.jpg";
+import googleIcon from "../../public/images/google.png";
+import facebookIcon from "../../public/images/facebook.png";
 
 const Login = () => {
-  const { login } = useAuth(); // 👈 use AuthContext here
+  const { loginWithEmail, loginWithGoogle, loginWithFacebook, logout, auth } =
+    useAuth(); // 👈 use AuthContext here
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,7 +67,7 @@ const Login = () => {
       }
 
       // data: { token, user }
-      login(data.data.token, data.data.existUser); // 👈 Call login from context
+      loginWithEmail(data.data.token, data.data.existUser); // 👈 Call login from context
       navigate(from, { replace: true });
       toast.success(`${data.message}`);
 
@@ -120,6 +123,65 @@ const Login = () => {
               </div>
 
               <button type="submit">Login</button>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textAlign: "center",
+                }}
+              >
+                <hr
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderTop: "1px solid #5c1b1bff",
+                  }}
+                />
+                <span style={{ padding: "0 10px", color: "#201e1eff" }}>OR</span>
+                <hr
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderTop: "1px solid #5c1b1bff",
+                  }}
+                />
+              </div>
+
+              {/* <a href="http://localhost:5001/api/auth/google"> */}
+              <button
+                style={{ marginTop: "1rem" }}
+                // onClick={() =>
+                //   (window.location.href =
+                //     "http://localhost:5001/api/auth/google")
+                // }
+
+                onClick={loginWithGoogle}
+              >
+                <img
+                  src={googleIcon}
+                  alt="googleIcon"
+                  style={{ width: "1.2em", marginRight: "1em" }}
+                />{" "}
+                Continue with google
+              </button>
+              {/* </a> */}
+
+              <button
+                style={{ marginTop: "1rem" }}
+                // onClick={() => {
+                //   window.location.href =
+                //     "http://localhost:5001/api/auth/facebook";
+                // }}
+                onClick={loginWithFacebook}
+              >
+                <img
+                  src={facebookIcon}
+                  alt="facebookIcon"
+                  style={{ width: "1.2em", marginRight: "1em" }}
+                />{" "}
+                Continue with Facebook
+              </button>
             </form>
           </div>
         </div>

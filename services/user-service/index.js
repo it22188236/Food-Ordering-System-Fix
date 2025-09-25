@@ -6,8 +6,10 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { consumeFromQueue } = require("./utils/rabbitmq");
 const User = require("./models/userModel");
-const EventType = require("@shared/events/eventTypes");
-const { ObjectId } = require("mongoose").Types;
+const passport = require("passport");
+const MongoStore = require("connect-mongo");
+const session = require("express-session");
+require("./config/passport.js")
 
 const app = express();
 app.use(express.json());
@@ -78,6 +80,24 @@ const port = process.env.PORT || 5002;
 
 const userRoute = require("./routes/userRoute");
 const authRoute = require("./routes/authRoute");
+
+app.use(
+  session({
+    secret: "food-ordering-service-0271-722",
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({ mongoUrl: process.env.MONGOOSE_URL }),
+    cookie: {
+      // maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 1000 * 60 * 15,
+      httpOnly: true,
+      secure: false, // ✅ false for localhost (true only for HTTPS)
+      sameSite: "lax", // ✅ allow cross-origin with credentials
+    },
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/users/", userRoute);
 app.use("/api/auth/", authRoute);

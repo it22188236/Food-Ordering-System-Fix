@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const CustomerRegisterForm = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    name:"",
+    name: "",
     email: "",
     phone: "",
     password: "",
@@ -166,6 +166,10 @@ const CustomerRegisterForm = () => {
               />
 
               <button type="submit">Register</button>
+
+              
+
+              
             </form>
           </div>
         </div>
